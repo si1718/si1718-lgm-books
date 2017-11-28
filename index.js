@@ -1,12 +1,16 @@
 var express = require("express");
 var bodyParser = require("body-parser");
+var helmet = require("helmet");
+var path = require("path");
 var MongoClient = require("mongodb").MongoClient;
 
 var mdbURL = "mongodb://djluis:djluis@ds149855.mlab.com:49855/si1718-lgm-books";
 
 var app = express();
 
+app.use(express.static(path.join(__dirname,"public")));
 app.use(bodyParser.json());
+app.use(helmet());
 
 //app.use(express.static('./'));
 //data: author, title, publisher, year, isbn
@@ -27,7 +31,18 @@ MongoClient.connect(mdbURL,{native_parser:true},(err, database) => {
 
 // GET a collection
 app.get(baseURL+"/books", function(req,res){
-    db.find({}).toArray((err,books) => {
+    
+    var query = {};
+    var fields = ["author", "title", "publisher", "year", "idBooks"];
+
+    for(var i = 0; i < fields.length; i++) {
+        var key = fields[i];
+        if (req.query.hasOwnProperty(key)) {
+            query[key] = { $regex: '.*' + req.query[key] + '.*', $options: 'i' };
+        }
+    }
+    
+    db.find(query).toArray((err,books) => {
         if(err){
             console.error('WARNING: Error getting data from DB');
             res.sendStatus(500);
@@ -36,6 +51,16 @@ app.get(baseURL+"/books", function(req,res){
             res.send(books);
         }
     });
+    
+    /*db.find({}).toArray((err,books) => {
+        if(err){
+            console.error('WARNING: Error getting data from DB');
+            res.sendStatus(500);
+        }else{
+            console.log("INFO: Sending books: " + JSON.stringify(books, 2, null));
+            res.send(books);
+        }
+    });*/
 });
 
 //POST over a collection
@@ -46,11 +71,11 @@ app.post(baseURL+"/books", function(req,res){
         console.log("WARNING: New POST request to /books/ without book, sending 400...");
         res.sendStatus(400);
     }else{
-        if(!newBook.idAuthor || !newBook.idTitle || !newBook.idPublisher || !newBook.idYear || !newBook.idIsbn){
+        if(!newBook.author || !newBook.title || !newBook.publisher || !newBook.year || !newBook.idBooks){
             console.log("WARNING: The book: " + JSON.stringify(newBook, 2, null) + " is not well-formed, sending 422...");
             res.sendStatus(422);
         }else{
-            db.findOne({idIsbn:newBook.idIsbn},function(err,book){
+            db.findOne({idBooks:newBook.idBooks},function(err,book){
                 if(err){
                     console.error('WARNING: Error getting data from DB');
                     res.sendStatus(500);
@@ -89,23 +114,23 @@ app.delete(baseURL+"/books", function(req,res){
 });
 
 // GET a single resource
-app.get(baseURL+"/books/:idIsbn", function(req,res){
-    var idIsbn = req.params.idIsbn;
-    if(!idIsbn){
-        console.log("WARNING: New GET request to /books/:idIsbn without idIsbn, sending 400...");
+app.get(baseURL+"/books/:idBooks", function(req,res){
+    var idBooks = req.params.idBooks;
+    if(!idBooks){
+        console.log("WARNING: New GET request to /books/:idBooks without idBooks, sending 400...");
         res.sendStatus(400);
     }else{
-        console.log("INFO: New GET request to /books/" + idIsbn);
-        db.findOne({"idIsbn" : idIsbn}, function(err,book){
+        console.log("INFO: New GET request to /books/" + idBooks);
+        db.findOne({"idBooks" : idBooks}, function(err,book){
             if(err){
                 console.error('WARNING: Error getting data from DB');
                 res.sendStatus(500);
             }else{
                 if(book){
-                    console.log("INFO: Sending contact: " + JSON.stringify(book, 2, null));
+                    console.log("INFO: Sending book: " + JSON.stringify(book, 2, null));
                     res.send(book);
                 }else{
-                    console.log("WARNING: There are not any book with idIsbn: " + idIsbn);
+                    console.log("WARNING: There are not any book with idBooks: " + idBooks);
                     res.sendStatus(404);
                 }
             }
@@ -114,16 +139,16 @@ app.get(baseURL+"/books/:idIsbn", function(req,res){
 });
 
 //PUT over a single resource
-app.put(baseURL+"/books/:idIsbn", function(req,res){
+app.put(baseURL+"/books/:idBooks", function(req,res){
     var updateBook = req.body;
-    var idIsbn = req.params.idIsbn;
+    var idBooks = req.params.idBooks;
     
     if(!updateBook){
         console.log("WARNING: New PUT request to /books/ without book, sending 400...");
         res.sendStatus(400);
     }else{
-        console.log("INFO: New PUT request to /books/" + idIsbn + " with data " + JSON.stringify(updateBook, 2, null));
-        if(!updateBook.idAuthor || !updateBook.idTitle || !updateBook.idPublisher || !updateBook.idYear || !updateBook.idIsbn){
+        console.log("INFO: New PUT request to /books/" + idBooks + " with data " + JSON.stringify(updateBook, 2, null));
+        if(!updateBook.author || !updateBook.title || !updateBook.publisher || !updateBook.year || !updateBook.idBooks){
             console.log("WARNING: The book " + JSON.stringify(updateBook, 2, null) + " is not well-formed, sending 422...");
             res.sendStatus(422);
         }else{
@@ -133,11 +158,11 @@ app.put(baseURL+"/books/:idIsbn", function(req,res){
                     res.sendStatus(500);
                 }else{
                     if(books){
-                        db.update({"idIsbn": idIsbn}, updateBook);
-                        console.log("INFO: Modifying book with idIsbn " + idIsbn + " with data " + JSON.stringify(updateBook, 2, null));
+                        db.update({"idBooks": idBooks}, updateBook);
+                        console.log("INFO: Modifying book with idBooks " + idBooks + " with data " + JSON.stringify(updateBook, 2, null));
                         res.send(updateBook);
                     }else{
-                        console.log("WARNING: There are not any book with idIsbn " + idIsbn);
+                        console.log("WARNING: There are not any book with idBooks " + idBooks);
                         res.sendStatus(404);
                     }
                 }
@@ -147,15 +172,15 @@ app.put(baseURL+"/books/:idIsbn", function(req,res){
 });
 
 //DELETE over a single resource
-app.delete(baseURL+"/books/:idIsbn", function(req,res){
-    var idIsbn = req.params.idIsbn;
+app.delete(baseURL+"/books/:idBooks", function(req,res){
+    var idBooks = req.params.idBooks;
     
-    if(!idIsbn){
-        console.log("WARNING: New DELETE request to /books/:idIsbn without idIsbn, sending 400...");
+    if(!idBooks){
+        console.log("WARNING: New DELETE request to /books/:idBooks without idBooks, sending 400...");
         res.sendStatus(400);
     }else{
-        console.log("INFO: New DELETE request to /books/" + idIsbn);
-        db.remove({idIsbn:idIsbn},{},function(err,bookRem){
+        console.log("INFO: New DELETE request to /books/" + idBooks);
+        db.remove({idBooks:idBooks},{},function(err,bookRem){
             if(err){
                 console.error('WARNING: Error removing data from DB');
                 res.sendStatus(500);
@@ -163,7 +188,7 @@ app.delete(baseURL+"/books/:idIsbn", function(req,res){
                 console.log("INFO: Books removed: " + bookRem.result.n);
                 if(bookRem.result.n === 1){
                     res.sendStatus(204);
-                    console.log("INFO: The book with idIsbn " + idIsbn + " has been succesfully deleted, sending 204...");
+                    console.log("INFO: The book with idBooks " + idBooks + " has been succesfully deleted, sending 204...");
                 }else{
                     console.log("WARNING: There are no books to delete");
                     res.sendStatus(404);
@@ -174,9 +199,9 @@ app.delete(baseURL+"/books/:idIsbn", function(req,res){
 });
 
 //POST over a single resource
-app.post(baseURL+"/books/:idIsbn", function (request, response) {
-    var idIsbn = request.params.idIsbn;
-    console.log("WARNING: New POST request to /books/" + idIsbn + ", sending 405...");
+app.post(baseURL+"/books/:idBooks", function (request, response) {
+    var idBooks = request.params.idBooks;
+    console.log("WARNING: New POST request to /books/" + idBooks + ", sending 405...");
     response.sendStatus(405); // method not allowed
 });
 

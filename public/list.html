@@ -1,0 +1,37 @@
+<h2>Books</h2>
+<table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Publisher</th>
+                <th>Year</th>
+                <th>ISBN</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input ng-model="newBook.title"/></td>
+                <td><input ng-model="newBook.author"/></td>
+                <td><input ng-model="newBook.publisher"/></td>
+                <td><input ng-model="newBook.year"/></td>
+                <td><input ng-model="newBook.idBooks"/></td>
+                <td>
+                    <button class="btn btn-primary" ng-click="addBook()">Add</button>
+                    <button class="btn btn-success" ng-click="refresh()">Search</button>
+                </td>
+            </tr>
+            <tr ng-repeat="book in books">
+                <td>{{book.title}}</td>
+                <td>{{book.author}}</td>
+                <td>{{book.publisher}}</td>
+                <td>{{book.year}}</td>
+                <td>{{book.idBooks}}</td>
+                <td>
+                    <a href="#!/book/{{book.idBooks}}"><button class="btn btn-primary" ng-click="editBook(book.idBooks)">Edit</button></a>
+                    <a class="btn btn-danger" ng-click="deleteBook(book.idBooks)">Delete</a>
+                </td>
+            </tr>
+        </tbody>
+</table>
