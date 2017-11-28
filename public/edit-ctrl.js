@@ -34,9 +34,14 @@ angular.module("RESTClientApp")
                 .then(function (response){
                     console.log("Updated");
                     $location.path("/");
-                }, function(error){
-                    alert(error.data);
-                });
+                }, function(error) {
+            iziToast.error({
+                icon: "fa fa-times",
+                title: 'More data needed',
+                position: "topRight",
+                message: error.data
+            });
+        });
         };
         
         $scope.go = function(path){
