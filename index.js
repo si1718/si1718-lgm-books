@@ -2,12 +2,13 @@ var express = require("express");
 var bodyParser = require("body-parser");
 var helmet = require("helmet");
 var path = require("path");
+var cors = require('cors');
 var MongoClient = require("mongodb").MongoClient;
 
 var mdbURL = "mongodb://djluis:djluis@ds149855.mlab.com:49855/si1718-lgm-books";
 
 var app = express();
-
+app.use(cors());
 app.use(express.static(path.join(__dirname,"public")));
 app.use(bodyParser.json());
 app.use(helmet());
@@ -33,7 +34,7 @@ MongoClient.connect(mdbURL,{native_parser:true},(err, database) => {
 app.get(baseURL+"/books", function(req,res){
     
     var query = {};
-    var fields = ["author", "title", "publisher", "year", "idBooks"];
+    var fields = ["author", "title", "publisher", "year", "idBooks", "keywords"];
 
     for(var i = 0; i < fields.length; i++) {
         var key = fields[i];
