@@ -4,10 +4,15 @@
         </thead>
         <tbody>
             <tr><th>Title</th><td><input ng-model="updatedBook.title"/></td></tr>
-            <tr><th>Author</th><td><input ng-model="updatedBook.author"/></td></tr>
+            <tr><th>Authors</th><td><input ng-model="updatedBook.author"/>&nbsp;<button class="btn btn-primary" ng-click="addValidationAuthors()" style="padding:0 15px 0 15px;">Add for validation</button></td></tr>
+            <tr ng-repeat="author in authors track by $index">
+                <th>Author</th><td>{{author}}&nbsp;{{updatedBook.researcher.viewAuthor}}<button class="btn btn-primary" ng-click="validateAuthor(author,authors.indexOf(author))" id="{{authors.indexOf(author)}}" style="padding:0 15px 0 15px;">Validate</button></td>
+            </tr>
             <tr><th>Publisher</th><td><input ng-model="updatedBook.publisher"/></td></tr>
             <tr><th>Year</th><td><input ng-model="updatedBook.year"/></td></tr>
-            <tr><th>ISBN</th><td>{{updatedBook.idBooks}}</td></tr>
+            <tr><th>ISBN</th><td>{{updatedBook.idBooks}}&nbsp;<button class="btn btn-primary" ng-click="validateChapters()" id="validate-chapter" style="padding:0 15px 0 15px;">Validate</button></td></tr>
+            <tr><th>Chapters</th><td>{{updatedBook.chapters.idChapter}}</td></tr>
+            <tr><th>Keywords</th><td><input ng-model="updatedBook.keywords"/></td></tr>
             <tr><td>
                     <button class="btn btn-danger" ng-click="go('')">Cancel</button>
                 </td>

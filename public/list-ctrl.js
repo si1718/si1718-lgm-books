@@ -16,7 +16,7 @@ angular.module("RESTClientApp")
             
             $scope.addBook = function(){
                 
-                if($scope.newBook.author instanceof String){
+                if(typeof($scope.newBook.author)==='string'){
                     author = $scope.newBook.author.split(",");
                     if(author.length>1){
                         $scope.newBook.author = author;

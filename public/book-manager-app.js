@@ -7,6 +7,9 @@ var app = angular.module("RESTClientApp",["ngRoute"])
                     }).when("/book/:idBooks",{
                         templateUrl: "edit.html",
                         controller:"EditCtrl"
+                    }).when("/graph",{
+                        templateUrl: "graph.html",
+                        controller:"GraphCtrl"
                     });
                 
                 console.log("App Initialized"); 
