@@ -19,6 +19,8 @@ app.use(helmet());
 var baseURL = "/api/v1";
 
 var db;
+var dbDate;
+var dbMonth;
 
 MongoClient.connect(mdbURL,{native_parser:true},(err, database) => {
     
@@ -27,6 +29,8 @@ MongoClient.connect(mdbURL,{native_parser:true},(err, database) => {
     }
     
     db = database.collection("books");
+    dbDate = database.collection("tweetsDataDate");
+    dbMonth = database.collection("tweetsDataMonth");
     
 });
 
@@ -62,6 +66,54 @@ app.get(baseURL+"/books", function(req,res){
             res.send(books);
         }
     });*/
+});
+
+app.get(baseURL+"/date", function(req,res){
+    
+    var query = {};
+    //var fields = ["", "title", "publisher", "year", "idBooks", "keywords"];
+    /*
+    for(var i = 0; i < fields.length; i++) {
+        var key = fields[i];
+        if (req.query.hasOwnProperty(key)) {
+            query[key] = { $regex: '.*' + req.query[key] + '.*', $options: 'i' };
+        }
+    }
+    */
+    dbDate.find(query).toArray((err,rec) => {
+        if(err){
+            console.error('WARNING: Error getting data from DB');
+            res.sendStatus(500);
+        }else{
+            console.log("INFO: Sending dates: " + JSON.stringify(rec, 2, null));
+            res.send(rec);
+        }
+    });
+    
+});
+
+app.get(baseURL+"/month", function(req,res){
+    
+    var query = {};
+    //var fields = ["", "title", "publisher", "year", "idBooks", "keywords"];
+    /*
+    for(var i = 0; i < fields.length; i++) {
+        var key = fields[i];
+        if (req.query.hasOwnProperty(key)) {
+            query[key] = { $regex: '.*' + req.query[key] + '.*', $options: 'i' };
+        }
+    }
+    */
+    dbMonth.find(query).toArray((err,rec) => {
+        if(err){
+            console.error('WARNING: Error getting data from DB');
+            res.sendStatus(500);
+        }else{
+            console.log("INFO: Sending months: " + JSON.stringify(rec, 2, null));
+            res.send(rec);
+        }
+    });
+    
 });
 
 //POST over a collection
